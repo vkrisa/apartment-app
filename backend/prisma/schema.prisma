@@ -14,11 +14,14 @@ model User {
   role      Role     @default(CLIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+  firstName String
+  lastLogin DateTime @default(now())
+  lastName  String
 
   @@map("user")
 }
 
 enum Role {
-  CLIENT
-  OWNER
+  Client
+  Owner
 }

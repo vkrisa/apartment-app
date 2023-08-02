@@ -9,12 +9,6 @@ import { JwtAuthGuard } from 'src/auth/jwt.auth-guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  @ApiOkResponse()
-  async create() {
-    return 'Ok';
-  }
-
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: UserEntity, isArray: true })
