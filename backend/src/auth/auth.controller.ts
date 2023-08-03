@@ -12,13 +12,13 @@ import { SignupDto } from './dto/signup.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signin')
+  @Post('local/signin')
   @ApiOkResponse({ type: AuthEntity })
   login(@Body() { email, password }: LoginDto) {
     return this.authService.login(email, password);
   }
 
-  @Post('signup')
+  @Post('local/signup')
   @ApiOkResponse({ type: AuthEntity })
   register(@Body() body: SignupDto) {
     return this.authService.register(body);
