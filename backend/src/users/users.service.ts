@@ -1,25 +1,37 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-
-export const roundsOfHashing = 10;
+import { SignupDto } from 'src/auth/dto/signup.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async createUser(createUserDto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
-      roundsOfHashing,
-    );
+  async createUserMapper(_user: SignupDto) {
+    const roleMapper = {
+      [Role.client]: () =>
+        this.prisma.client.create({
+          data: { user: { create: _user } },
+        }),
+      [Role.owner]: async () =>
+        this.prisma.owner.create({
+          data: { user: { create: _user } },
+        }),
+    }[_user.role];
 
-    createUserDto.password = hashedPassword;
+    return await roleMapper();
+  }
 
-    return this.prisma.user.create({
-      data: createUserDto,
-    });
+  async createUser(createUserDto: SignupDto) {
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const user = { ...createUserDto, password: hashedPassword };
+
+    try {
+      return await this.createUserMapper(user);
+    } catch (error) {
+      throw new NotFoundException('Could not create user');
+    }
   }
 
   findAll() {
