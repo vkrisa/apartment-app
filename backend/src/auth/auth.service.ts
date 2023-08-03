@@ -38,24 +38,27 @@ export class AuthService {
       data: { lastLogin: new Date() },
     });
 
+    const payload = { sub: user.id, role: user.role };
+
     return {
-      accessToken: this.jwtService.sign({ userId: user.id }),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 
-  async register(payload: SignupDto): Promise<AuthEntity> {
+  async register(signupDto: SignupDto): Promise<AuthEntity> {
     const user = await this.prisma.user.findUnique({
-      where: { email: payload.email },
+      where: { email: signupDto.email },
     });
 
     if (user) {
       throw new ConflictException('Email already exists');
     }
 
-    const result = await this.usersService.createUser(payload);
+    const result = await this.usersService.createUser(signupDto);
+    const payload = { sub: result.userId, role: signupDto.role };
 
     return {
-      accessToken: this.jwtService.sign({ userId: result.id }),
+      accessToken: this.jwtService.sign(payload),
     };
   }
 }
